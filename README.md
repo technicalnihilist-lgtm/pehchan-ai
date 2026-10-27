@@ -18,7 +18,7 @@ no upload, no ads. Your photos never leave your phone.
 
 **[⬇ Download PehchanAI-v1.0.apk (11 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.0/PehchanAI-v1.0.apk)**
 
-1. Tap the link on your phone (or open the [v1.0 release](../../releases/tag/v1.0) page).
+1. Tap the link on your phone (or open the [v1.0 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.0) page).
 2. Android asks to allow installs from this source → allow.
 3. Install, open, done. Works on **Android 5.0 (API 21) and newer**, any phone.
 
@@ -98,7 +98,7 @@ only accepts updates signed with the same key.
 
 ### Why the model is not in the tree
 
-`app/assets/model.tflite` (5.2 MB) is attached to the [v1.0 release](../../releases/tag/v1.0)
+`app/assets/model.tflite` (5.2 MB) is attached to the [v1.0 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.0)
 instead of being committed, because the GitHub API rejected the binary as too large. `build.sh`
 downloads it automatically if it is missing, so a clean clone still builds with one command.
 The labels file *is* in the tree (`app/assets/labels.txt`).
