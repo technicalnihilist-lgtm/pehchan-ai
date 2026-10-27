@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#080B14</color>
+    <color name="card">#141B2E</color>
+    <color name="card2">#1B2338</color>
+    <color name="stroke">#26314A</color>
+    <color name="text">#F2F5FF</color>
+    <color name="textDim">#96A2BE</color>
+    <color name="textFaint">#6B7793</color>
+    <color name="brand">#7C5CFF</color>
+    <color name="brand2">#A78BFA</color>
+    <color name="blue">#4F8CFF</color>
+    <color name="good">#4ADE80</color>
+    <color name="goodBg">#12291F</color>
+    <color name="goodStroke">#2A6B4A</color>
+    <color name="white">#FFFFFF</color>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pehchan AI</string>
+    <string name="tagline">Image identifier · on-device AI</string>
+    <string name="hero_title">What\'s in your photo?</string>
+    <string name="hero_sub">Pick any photo and Pehchan AI tells you what it is — instantly, right on your phone.</string>
+    <string name="empty_title">No photo selected</string>
+    <string name="empty_sub">Choose from gallery or take a new photo</string>
+    <string name="btn_gallery">Gallery</string>
+    <string name="btn_camera">Camera</string>
+    <string name="btn_identify">Identify Image</string>
+    <string name="loading">Looking at your photo…</string>
+    <string name="top_match">TOP MATCH</string>
+    <string name="other_possibilities">OTHER POSSIBILITIES</string>
+    <string name="image_details">IMAGE DETAILS</string>
+    <string name="dominant_colours">DOMINANT COLOURS</string>
+    <string name="btn_lens">Search on Google Lens</string>
+    <string name="btn_wiki">Wikipedia</string>
+    <string name="btn_share">Share</string>
+    <string name="footer">Runs 100% on your phone with an on-device AI model. Your photos never leave the device.</string>
+    <string name="offline_badge">OFFLINE</string>
+</resources>
