@@ -18,6 +18,14 @@ DL=/scratch/work/dl
 rm -rf "$BUILD" "$OUT"
 mkdir -p "$BUILD/res" "$BUILD/gen" "$BUILD/classes" "$BUILD/dex" "$OUT"
 
+# The 5.4 MB model lives on the GitHub release instead of in the repo tree
+# (the GitHub API rejects binaries that large). Fetch it once if it is missing.
+if [ ! -f "$APP/assets/model.tflite" ]; then
+  echo "[0/7] fetching model.tflite from the release"
+  curl -L --fail -o "$APP/assets/model.tflite" \
+    "https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.0/model.tflite"
+fi
+
 echo "[1/7] compiling resources"
 $BT/aapt2 compile --dir "$APP/res" -o "$BUILD/res.zip"
 

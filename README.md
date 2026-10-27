@@ -16,11 +16,17 @@ no upload, no ads. Your photos never leave your phone.
 
 ## Download & install
 
-1. Download **[`apk/PehchanAI-v1.0.apk`](apk/PehchanAI-v1.0.apk)** (11 MB).
-2. Open it on your phone → Android asks to allow installs from this source → allow.
+**[⬇ Download PehchanAI-v1.0.apk (11 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.0/PehchanAI-v1.0.apk)**
+
+1. Tap the link on your phone (or open the [v1.0 release](../../releases/tag/v1.0) page).
+2. Android asks to allow installs from this source → allow.
 3. Install, open, done. Works on **Android 5.0 (API 21) and newer**, any phone.
 
-The APK is signed (v1 + v2 + v3 schemes) so it installs cleanly on modern Android.
+```
+SHA-256  a476884ddece158ebc79ab5a8e0714083e7a29908bc3008bf5201f1a72610069
+```
+
+The APK is signed with v1 + v2 + v3 schemes, so it installs cleanly on modern Android.
 
 ## What it does
 
@@ -83,25 +89,32 @@ bash app/build.sh          # → out/PehchanAI-v1.0.apk
 `build.sh` runs the whole pipeline and prints each step:
 
 ```
-aapt2 compile  →  aapt2 link  →  javac  →  d8  →  package (dex + .so + assets)
-               →  zipalign  →  apksigner
+fetch model (if missing) → aapt2 compile → aapt2 link → javac → d8
+                         → package (dex + .so + assets) → zipalign → apksigner
 ```
 
 It generates `app/keystore.jks` on first run if one is not present. **Keep that file** — Android
 only accepts updates signed with the same key.
+
+### Why the model is not in the tree
+
+`app/assets/model.tflite` (5.2 MB) is attached to the [v1.0 release](../../releases/tag/v1.0)
+instead of being committed, because the GitHub API rejected the binary as too large. `build.sh`
+downloads it automatically if it is missing, so a clean clone still builds with one command.
+The labels file *is* in the tree (`app/assets/labels.txt`).
 
 ## Project layout
 
 ```
 app/
 ├── AndroidManifest.xml              no permissions, portrait, share/VIEW filters
-├── build.sh                         the whole build, 7 steps
+├── build.sh                         the whole build, 8 steps
 ├── assets/
-│   ├── model.tflite                 EfficientNet-Lite0 int8
+│   ├── model.tflite                 EfficientNet-Lite0 int8 (fetched from the release)
 │   └── labels.txt                   1000 ImageNet labels
 ├── res/
 │   ├── layout/activity_main.xml     single screen, one scroll
-│   ├── drawable/                    gradients, cards, 8 hand-written vector icons
+│   ├── drawable/                    gradients, cards, 9 hand-written vector icons
 │   ├── values/                      colours, strings, theme
 │   └── mipmap-*/                    launcher icon (adaptive + PNG fallbacks)
 └── src/com/rajok/pehchanai/
@@ -110,7 +123,6 @@ app/
     ├── ImageInfo.java               size / lighting / dominant colours
     └── FileShareProvider.java       tiny ContentProvider for camera + share
 screenshots/                         UI previews (1080×2340)
-apk/PehchanAI-v1.0.apk               signed, installable
 ```
 
 ## Credits
