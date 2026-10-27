@@ -57,7 +57,7 @@ public class OverlayView extends View {
         chipPaint.setColor(Color.parseColor("#E6121A2C"));
 
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(10.5f * d);
+        textPaint.setTextSize(9.5f * d);
         textPaint.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
@@ -118,8 +118,8 @@ public class OverlayView extends View {
 
             String text = det.label + "  " + Math.round(det.score * 100) + "%";
             float textWidth = textPaint.measureText(text);
-            float chipH = textPaint.getTextSize() + 7f * d;
-            float chipW = textWidth + 12f * d;
+            float chipH = textPaint.getTextSize() + 6f * d;
+            float chipW = textWidth + 10f * d;
 
             float chipLeft = r.left;
             float chipTop = r.top - chipH - 2f * d;
@@ -134,8 +134,8 @@ public class OverlayView extends View {
             }
             RectF chip = new RectF(chipLeft, chipTop, chipLeft + chipW, chipTop + chipH);
             canvas.drawRoundRect(chip, 7f * d, 7f * d, chipPaint);
-            canvas.drawText(text, chip.left + 6f * d,
-                    chip.bottom - textPaint.getTextSize() * 0.28f - 2f * d, textPaint);
+            canvas.drawText(text, chip.left + 5f * d,
+                    chip.bottom - textPaint.getTextSize() * 0.26f - 2f * d, textPaint);
         }
     }
 }

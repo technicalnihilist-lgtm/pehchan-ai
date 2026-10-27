@@ -735,7 +735,7 @@ public class MainActivity extends Activity {
             row.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            rowParams.topMargin = i == 0 ? 0 : dp(12);
+            rowParams.topMargin = i == 0 ? 0 : dp(10);
             row.setLayoutParams(rowParams);
             row.setClickable(true);
             row.setFocusable(true);
@@ -767,8 +767,8 @@ public class MainActivity extends Activity {
             bar.setOrientation(LinearLayout.HORIZONTAL);
             bar.setBackgroundResource(R.drawable.track_bg);
             LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, dp(7));
-            barParams.topMargin = dp(6);
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(4));
+            barParams.topMargin = dp(5);
             bar.setLayoutParams(barParams);
 
             View fill = new View(this);
@@ -880,7 +880,7 @@ public class MainActivity extends Activity {
         row.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        rowParams.topMargin = first ? 0 : dp(12);
+        rowParams.topMargin = first ? 0 : dp(10);
         row.setLayoutParams(rowParams);
 
         LinearLayout header = new LinearLayout(this);
@@ -911,8 +911,8 @@ public class MainActivity extends Activity {
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setBackgroundResource(R.drawable.track_bg);
         LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(7));
-        barParams.topMargin = dp(6);
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(4));
+        barParams.topMargin = dp(5);
         bar.setLayoutParams(barParams);
 
         View fill = new View(this);

@@ -174,8 +174,8 @@ def boxes_html():
             '<div style="position:absolute;left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;'
             'border:2.2px solid #A78BFA;border-radius:10px;background:rgba(124,92,255,.16)"></div>'
             '<div style="position:absolute;left:%.1fpx;top:%.1fpx;background:rgba(18,26,44,.9);'
-            'border-radius:7px;padding:3px 6px;font:500 10.5px Roboto;color:#fff;white-space:nowrap">%s &nbsp;%d%%</div>'
-            % (x, y, bw, bh, max(2.0, x), (y - 20 if y >= 22 else y + 2), cap(name), round(score * 100)))
+            'border-radius:7px;padding:2px 5px;font:500 9.5px Roboto;color:#fff;white-space:nowrap">%s &nbsp;%d%%</div>'
+            % (x, y, bw, bh, max(2.0, x), (y - 18 if y >= 20 else y + 2), cap(name), round(score * 100)))
     return "".join(out)
 
 
@@ -196,9 +196,9 @@ def objects_card():
             '<div style="display:flex;align-items:center">'
             '<div style="flex:1;font:500 14px Roboto;color:#F2F5FF">%s</div>'
             '<div style="font:400 12.5px Roboto;color:#96A2BE">%d%%</div></div>'
-            '<div style="margin-top:6px;height:7px;border-radius:100px;background:#1D2740;display:flex;overflow:hidden">'
+            '<div style="margin-top:5px;height:4px;border-radius:100px;background:#1D2740;display:flex;overflow:hidden">'
             '<div style="width:%.1f%%;background:linear-gradient(90deg,#8B5CFF,#4F8CFF)"></div></div></div>'
-            % (0 if i == 0 else 12, cap(name), max(1, round(score * 100)), max(1.2, score * 100)))
+            % (0 if i == 0 else 10, cap(name), max(1, round(score * 100)), max(1.2, score * 100)))
     return ('<div class="card" style="padding:16px">'
             '<div class="label">OBJECTS FOUND</div>'
             '<div style="margin-top:4px;font:400 11.5px Roboto;color:#6B7793">'
@@ -243,7 +243,7 @@ def bars():
           <div style="flex:1;font:500 14px Roboto;color:#F2F5FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">%s</div>
           <div style="font:400 12.5px Roboto;color:#96A2BE">%d%%</div>
         </div>
-        <div style="margin-top:6px;height:7px;border-radius:100px;background:#1D2740;display:flex;overflow:hidden">
+        <div style="margin-top:5px;height:4px;border-radius:100px;background:#1D2740;display:flex;overflow:hidden">
           <div style="width:%.1f%%;background:linear-gradient(90deg,#8B5CFF,#4F8CFF);opacity:%.2f"></div>
         </div>
       </div>""" % (0 if i == 0 else 12, cap(label), max(1, round(score * 100)),
