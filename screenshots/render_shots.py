@@ -54,6 +54,32 @@ def pretty(raw):
 
 
 results = [(pretty(labels[i]), float(probs[i])) for i in order]
+
+# ---- object detector (same preprocessing the app uses) ----------------------
+coco = [l.strip() for l in open(os.path.join(WORK, "app/assets/coco_labels.txt"), encoding="utf-8") if l.strip()]
+det = Interpreter(model_path=os.path.join(WORK, "app/assets/detect.tflite"), num_threads=2)
+det.allocate_tensors()
+din = det.get_input_details()[0]
+douts = det.get_output_details()
+b_i, c_i, s_i, n_i = [o["index"] for o in douts]
+
+darr = np.array(photo.resize((300, 300), Image.BILINEAR), dtype=np.uint8)[None, ...]
+det.set_tensor(din["index"], darr)
+det.invoke()
+dboxes = det.get_tensor(b_i)[0]
+dcls = det.get_tensor(c_i)[0].astype(int)
+dscr = det.get_tensor(s_i)[0]
+dnum = int(det.get_tensor(n_i)[0])
+detections = []
+seen = set()
+for i in range(dnum):
+    if dscr[i] < 0.42:
+        continue
+    name = coco[dcls[i]] if 0 <= dcls[i] < len(coco) else "?"
+    if name == "???" or name in seen:
+        continue
+    seen.add(name)
+    detections.append((name, float(dscr[i]), [float(x) for x in dboxes[i]]))
 top_label, top_score = results[0]
 others = results[1:5]
 
@@ -108,6 +134,52 @@ details = [
 ]
 pct = max(1, round(top_score * 100))
 rank_note = "High confidence" if pct >= 70 else ("Fairly confident" if pct >= 40 else "Best guess \u2014 try a closer photo")
+
+
+FRAME_W, FRAME_H = 294.0, 288.0   # inner content box of the preview frame (dp)
+
+
+def boxes_html():
+    if not detections:
+        return ""
+    w, h = photo.size
+    scale = max(FRAME_W / w, FRAME_H / h)
+    dw, dh = w * scale, h * scale
+    ox, oy = (FRAME_W - dw) / 2.0, (FRAME_H - dh) / 2.0
+    out = []
+    for name, score, box in detections:
+        top, left, bottom, right = box
+        x = ox + left * dw
+        y = oy + top * dh
+        bw = (right - left) * dw
+        bh = (bottom - top) * dh
+        out.append(
+            '<div style="position:absolute;left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;'
+            'border:2.2px solid #A78BFA;border-radius:10px;background:rgba(124,92,255,.16)"></div>'
+            '<div style="position:absolute;left:%.1fpx;top:%.1fpx;background:rgba(18,26,44,.9);'
+            'border-radius:7px;padding:3px 6px;font:500 10.5px Roboto;color:#fff;white-space:nowrap">%s &nbsp;%d%%</div>'
+            % (x, y, bw, bh, max(2.0, x), (y - 20 if y >= 22 else y + 2), cap(name), round(score * 100)))
+    return "".join(out)
+
+
+def objects_card():
+    if not detections:
+        return ""
+    rows = []
+    for i, (name, score, _) in enumerate(detections):
+        rows.append(
+            '<div style="margin-top:%dpx">'
+            '<div style="display:flex;align-items:center">'
+            '<div style="flex:1;font:500 14px Roboto;color:#F2F5FF">%s</div>'
+            '<div style="font:400 12.5px Roboto;color:#96A2BE">%d%%</div></div>'
+            '<div style="margin-top:6px;height:7px;border-radius:100px;background:#1D2740;display:flex;overflow:hidden">'
+            '<div style="width:%.1f%%;background:linear-gradient(90deg,#8B5CFF,#4F8CFF)"></div></div></div>'
+            % (0 if i == 0 else 12, cap(name), max(1, round(score * 100)), max(1.2, score * 100)))
+    return ('<div class="card" style="padding:16px">'
+            '<div class="label">OBJECTS FOUND</div>'
+            '<div style="margin-top:4px;font:400 11.5px Roboto;color:#6B7793">'
+            'Tap any object to look closer at it</div>'
+            '<div style="margin-top:10px">' + "".join(rows) + '</div></div>')
 
 
 def cap(text):
@@ -228,11 +300,12 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
     </div>
 
     <div style="margin-top:22px;font:900 27px Roboto;line-height:1.16;letter-spacing:-.3px">What&rsquo;s in your photo?</div>
-    <div style="margin-top:7px;font:400 13.5px Roboto;line-height:1.4;color:#96A2BE">Pick any photo and Pehchan AI tells you what it is &mdash; instantly, right on your phone.</div>
+    <div style="margin-top:7px;font:400 13.5px Roboto;line-height:1.4;color:#96A2BE">Animals, food, phones, gadgets, furniture &mdash; pick any photo and Pehchan AI finds every object in it.</div>
 
     <div class="card" style="margin-top:18px;padding:14px">
-      <div style="height:290px;border-radius:18px;background:#0D1424;border:1px solid #232E46;overflow:hidden;position:relative">
+      <div id="imageframe" style="height:290px;border-radius:18px;background:#0D1424;border:1px solid #232E46;overflow:hidden;position:relative">
         %(photo)s
+        %(boxes)s
         %(placeholder)s
       </div>
       <div class="btnrow" style="margin-top:12px">
@@ -243,7 +316,8 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
     </div>
 
     <div id="results" style="margin-top:14px;%(results_style)s">
-      <div style="border-radius:22px;border:1px solid #3A3568;padding:18px;background:linear-gradient(315deg,#2A2352,#1A2140 55%%,#151C31)">
+      %(objects_card)s
+      <div style="border-radius:22px;border:1px solid #3A3568;padding:18px;margin-top:%(hero_margin)s;background:linear-gradient(315deg,#2A2352,#1A2140 55%%,#151C31)">
         <div class="label" style="color:#A78BFA">TOP MATCH</div>
         <div style="margin-top:6px;font:900 25px Roboto;letter-spacing:-.2px">%(top_label)s</div>
         <div style="margin-top:5px;font:400 13px Roboto;color:#96A2BE;line-height:1.35">This looks like %(top_article)s.</div>
@@ -273,7 +347,7 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
     </div>
 
     <div style="margin-top:18px;text-align:center;font:400 11px Roboto;line-height:1.35;color:#6B7793">
-      Runs 100%% on your phone with an on-device AI model. Your photos never leave the device.
+      Two AI models run 100%% on your phone &mdash; an object detector and a fine-detail classifier.
     </div>
    </div>
   </div>
@@ -286,6 +360,9 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
   if (q === 'result') {
     var r = document.getElementById('results');
     content.style.marginTop = -(r.offsetTop - 30) + 'px';
+  } else if (q === 'detected') {
+    var f = document.getElementById('imageframe');
+    content.style.marginTop = -(f.offsetTop - 34) + 'px';
   } else if (q === 'details') {
     var max = content.offsetHeight - 754;
     var d = document.getElementById('detailcard');
@@ -304,11 +381,11 @@ def build(screen):
                    '<div style="font:400 12px Roboto;color:#6B7793">Choose from gallery or take a new photo</div></div>')
     identify_style = "opacity:.45;"
     results_style = "display:none;"
-    if screen in ("picked", "result", "details"):
+    if screen in ("picked", "result", "details", "detected"):
         photo_html = ('<img src="data:image/jpeg;base64,%s" style="width:100%%;height:100%%;object-fit:cover">' % img_b64)
         placeholder = ""
         identify_style = ""
-    if screen in ("result", "details"):
+    if screen in ("result", "details", "detected"):
         results_style = ""
     return HTML % {
         "font": font_b64,
@@ -317,6 +394,9 @@ def build(screen):
         "gal18": icon("gallery", "18px"),
         "cam18": icon("camera", "18px"),
         "photo": photo_html,
+        "boxes": boxes_html() if screen in ("result", "details", "detected") else "",
+        "objects_card": objects_card() if screen in ("result", "details", "detected") else "",
+        "hero_margin": ("12px" if detections else "0") if screen in ("result", "details", "detected") else "0",
         "placeholder": placeholder,
         "identify_style": identify_style,
         "results_style": results_style,
@@ -335,7 +415,8 @@ def build(screen):
 
 CHROME = "chromium"
 _default = [("home", "01-home.png"), ("picked", "02-photo-picked.png"),
-            ("result", "03-result.png"), ("details", "04-details.png")]
+            ("detected", "03-objects.png"), ("result", "04-result.png"),
+            ("details", "05-details.png")]
 _env = os.environ.get("SHOTS")
 shots = _default if not _env else [(a, b) for a, b in (x.split(":") for x in _env.split(","))]
 

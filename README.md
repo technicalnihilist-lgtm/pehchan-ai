@@ -1,44 +1,49 @@
 # Pehchan AI — Offline Image Identifier for Android
 
-Point your phone at anything, tap one button, and find out what it is. Pehchan AI runs a
-quantised **EfficientNet-Lite0** model **entirely on the device** — no internet, no account,
-no upload, no ads. Your photos never leave your phone.
+Point your phone at anything — a dog, a plate of food, a phone, a laptop, a chair — and
+Pehchan AI finds every object in the photo, boxes it, and tells you what it is.
+**Two AI models run entirely on the device**: no internet, no account, no upload, no ads.
 
-| Home | Photo picked | Result | Another example |
+| Home | Objects found | Result | Another example |
 |:--:|:--:|:--:|:--:|
-| ![](screenshots/01-home.png) | ![](screenshots/02-photo-picked.png) | ![](screenshots/03-result.png) | ![](screenshots/05-pizza.png) |
+| ![](screenshots/01-home.png) | ![](screenshots/03-objects.png) | ![](screenshots/04-result.png) | ![](screenshots/06-pizza.png) |
 
-> The images above are UI previews rendered from the app's own layout (same dp values,
-> colours and fonts) at 1080×2340 px, because the build machine had no Android emulator.
-> The values shown are real — produced by running the bundled model on those two photos.
+> These are UI previews rendered from the app's own layout (same dp values, colours and
+> fonts) at 1080×2340 px, because the build machine had no Android emulator. The numbers in
+> them are real — both models were run on those two photos to produce them.
 
 ---
 
 ## Download & install
 
-**[⬇ Download PehchanAI-v1.0.apk (11 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.0/PehchanAI-v1.0.apk)**
+**[⬇ Download PehchanAI-v1.1.apk (14 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.1/PehchanAI-v1.1.apk)**
 
-1. Tap the link on your phone (or open the [v1.0 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.0) page).
+1. Tap the link on your phone (or open the [v1.1 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.1)).
 2. Android asks to allow installs from this source → allow.
-3. Install, open, done. Works on **Android 5.0 (API 21) and newer**, any phone.
+3. Install, open, done. **Android 5.0 (API 21) and newer**, any phone.
 
 ```
-SHA-256  a476884ddece158ebc79ab5a8e0714083e7a29908bc3008bf5201f1a72610069
+SHA-256  3b955d419e7b2d44f65c41d73242a6acc1dae04d336307c373a8118c226155a4
 ```
 
-The APK is signed with v1 + v2 + v3 schemes, so it installs cleanly on modern Android.
+Signed with v1 + v2 + v3 schemes, so it installs cleanly on modern Android.
+Version 1.1 also installs *over* 1.0 (same signing key).
 
 ## What it does
 
-* **Identify a photo** — gallery or camera, then one tap. Top match plus the next four
-  possibilities with confidence bars.
+* **Finds every object** — an on-device detector draws a box around each thing it sees and
+  lists them with confidence: people, dogs, cats, birds, food, phones, laptops, TVs, chairs,
+  tables, cars, bicycles, bottles, cups, and 60+ more categories.
+* **Tap any object to look closer** — the app crops just that part of the photo and runs the
+  fine-detail model on it, so "dog" becomes "golden retriever" and "car" becomes "sports car".
 * **Plain-language answer** — "This looks like a golden retriever." + `55% match` + a
-  confidence word (High / Fairly confident / Best guess) so the number means something.
+  confidence word (High / Fairly confident / Best guess), so the number means something.
 * **Image details** — real photo size, file size, lighting (Bright / Balanced / Dark) and the
   five **dominant colours** with hex codes.
-* **Search on Google Lens** — one tap for anything the on-device model doesn't know.
+* **Search on Google Lens** — one tap for anything the on-device models don't know
+  (brands, monuments, rare plants, specific products).
 * **Wikipedia** — opens the article for the top match.
-* **Share** — sends the photo + the result text to any app.
+* **Share** — sends the photo plus the result text to any app.
 * **Open-with support** — share an image *to* Pehchan AI from your gallery or any other app.
 
 ## Why it feels fast and safe
@@ -46,62 +51,73 @@ The APK is signed with v1 + v2 + v3 schemes, so it installs cleanly on modern An
 | | |
 |---|---|
 | **100% offline** | The app declares **no internet permission at all** — it physically cannot upload your photos. |
-| **No permissions** | No storage, camera or location permission. Photos are read through Android's own file picker; the camera hands back one photo. |
-| **~11 MB** | Model + runtime are bundled; nothing is downloaded later. |
+| **No permissions** | No storage, camera or location permission. Photos come through Android's own file picker; the camera hands back one photo. |
+| **~14 MB** | Both models and the runtime are bundled; nothing is downloaded later. |
 | **Works on any phone** | Native libraries for `arm64-v8a`, `armeabi-v7a`, `x86` and `x86_64`. |
 
 ## How it works
 
 ```
-photo ──► decode (max 1600 px) ──► EXIF rotation fix ──► resize 224×224 RGB
-      ──► EfficientNet-Lite0 int8 (TFLite) ──► dequantise 1000 ImageNet scores
-      ──► top-5 with confidence ──► UI
+photo ──► decode (max 1600 px) ──► EXIF rotation fix
+      ├─► 300×300  SSD-MobileNet detector ──► up to 10 boxes + labels  ──► drawn on the photo
+      └─► 224×224  EfficientNet-Lite0      ──► 1000 ImageNet scores    ──► "best match"
+                                          tap an object ──► crop ──► classify the crop
 ```
 
-* **Model** — `efficientnet_lite0_int8_2.tflite` (5.2 MB, fully-quantised uint8, 224×224 input,
-  ImageNet-1k head). Runs on CPU with TFLite `Interpreter`, multi-threaded.
-* **Labels** — the 1000 ImageNet class names, cleaned for display (`tabby, tabby cat` → `tabby cat`).
-* **Colours / lighting** — computed on a 44 px thumbnail with the same algorithm shown in
-  [`ImageInfo.java`](app/src/com/rajok/pehchanai/ImageInfo.java).
-* **No support library, no Kotlin, no Compose** — plain Android framework classes, so the whole
-  APK stays tiny and starts instantly.
+* **Detector** — SSD MobileNet V1, fully quantised, 300×300 uint8, COCO 80 classes, with
+  non-max suppression built into the graph (`app/assets/detect.tflite`, 4.0 MB).
+* **Classifier** — EfficientNet-Lite0 int8, 224×224 uint8, ImageNet-1k head
+  (`app/assets/model.tflite`, 5.2 MB) — used for the whole photo *and* for the crop you tap.
+* **Boxes** — drawn by `OverlayView`, which repeats the preview's centre-crop transform so the
+  boxes stay glued to the right pixels at any photo shape.
+* **Colours / lighting** — computed on a 44 px thumbnail in `ImageInfo.java`.
+* **No support library, no Kotlin, no Compose** — plain Android framework classes, so the APK
+  stays small and starts instantly.
 
 ### Honest limits
 
-The on-device model knows the **1000 ImageNet categories** — the everyday objects it was trained
-on: dogs and cats by breed, birds, fish, vehicles, food, fruit, furniture, tools, musical
-instruments, clothing, sports gear and so on. For anything outside that list (a specific brand,
-a rare plant, a monument, a person) the top match will be a low-confidence near-miss — that is
-what the **Search on Google Lens** button is for. Nothing here pretends to recognise *every*
-object in the universe; it recognises a lot of them, instantly and privately.
+The detector knows the **80 COCO categories** — person, bicycle, car, motorcycle, airplane,
+bus, train, truck, boat, traffic light, fire hydrant, stop sign, parking meter, bench, bird,
+cat, dog, horse, sheep, cow, elephant, bear, zebra, giraffe, backpack, umbrella, handbag, tie,
+suitcase, frisbee, skis, snowboard, sports ball, kite, baseball bat, baseball glove, skateboard,
+surfboard, tennis racket, bottle, wine glass, cup, fork, knife, spoon, bowl, banana, apple,
+sandwich, orange, broccoli, carrot, hot dog, pizza, donut, cake, chair, couch, potted plant,
+bed, dining table, toilet, tv, laptop, mouse, remote, keyboard, cell phone, microwave, oven,
+toaster, sink, refrigerator, book, clock, vase, scissors, teddy bear, hair drier, toothbrush.
+
+The classifier adds **1000 fine-grained ImageNet classes** on top (dog breeds, bird species,
+instruments, tools, and so on). Anything outside both lists — a specific brand, a monument, a
+rare plant, a person's name — will come back as a low-confidence near-miss, which is exactly
+what the **Search on Google Lens** button is for. No on-device model recognises *every*
+object in the world; this one recognises a lot of them, instantly and privately.
 
 ## Build it yourself
 
-The project builds **without Gradle** — just the Android SDK build-tools, which keeps the build
-easy to reproduce:
+No Gradle — just the Android SDK build-tools, which keeps the build easy to reproduce:
 
 ```bash
 # needs: JDK 17, Android SDK build-tools 34 + platform android-35
 export SDK=/path/to/android-sdk
-bash app/build.sh          # → out/PehchanAI-v1.0.apk
+bash app/build.sh          # → out/PehchanAI-v1.1.apk
 ```
 
 `build.sh` runs the whole pipeline and prints each step:
 
 ```
-fetch model (if missing) → aapt2 compile → aapt2 link → javac → d8
-                         → package (dex + .so + assets) → zipalign → apksigner
+fetch models (if missing) → aapt2 compile → aapt2 link → javac → d8
+                          → package (dex + .so + assets) → zipalign → apksigner
 ```
 
 It generates `app/keystore.jks` on first run if one is not present. **Keep that file** — Android
 only accepts updates signed with the same key.
 
-### Why the model is not in the tree
+### Why the models are not in the tree
 
-`app/assets/model.tflite` (5.2 MB) is attached to the [v1.0 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.0)
-instead of being committed, because the GitHub API rejected the binary as too large. `build.sh`
-downloads it automatically if it is missing, so a clean clone still builds with one command.
-The labels file *is* in the tree (`app/assets/labels.txt`).
+`app/assets/model.tflite` (5.2 MB) and `app/assets/detect.tflite` (4.0 MB) are attached to the
+[v1.1 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.1) instead of
+being committed, because the GitHub API rejects binaries that large in a normal commit.
+`build.sh` downloads whichever one is missing, so a clean clone still builds with one command.
+Both label files *are* in the tree.
 
 ## Project layout
 
@@ -110,6 +126,8 @@ app/
 ├── AndroidManifest.xml              no permissions, portrait, share/VIEW filters
 ├── build.sh                         the whole build, 8 steps
 ├── assets/
+│   ├── detect.tflite                SSD-MobileNet detector, COCO 80 (fetched from the release)
+│   ├── coco_labels.txt              the 80 object names
 │   ├── model.tflite                 EfficientNet-Lite0 int8 (fetched from the release)
 │   └── labels.txt                   1000 ImageNet labels
 ├── res/
@@ -119,18 +137,28 @@ app/
 │   └── mipmap-*/                    launcher icon (adaptive + PNG fallbacks)
 └── src/com/rajok/pehchanai/
     ├── MainActivity.java            UI, picking, camera, results, sharing
-    ├── Classifier.java              TFLite wrapper + top-5
+    ├── Detector.java                object detector + boxes
+    ├── OverlayView.java             draws the boxes on the photo
+    ├── Classifier.java              fine-detail classifier (whole photo + tapped crop)
     ├── ImageInfo.java               size / lighting / dominant colours
     └── FileShareProvider.java       tiny ContentProvider for camera + share
 screenshots/                         UI previews (1080×2340)
 ```
 
+## Changelog
+
+**v1.1** — object detection: every object in the photo is boxed and listed; tap an object to
+classify just that part. New `OBJECTS FOUND` card, box overlay, richer share text.
+
+**v1.0** — first release: single-model image identifier, image details, Lens/Wikipedia/Share.
+
 ## Credits
 
-* Model: [EfficientNet-Lite0](https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet/lite),
+* Detector: SSD MobileNet V1 COCO (TensorFlow, Apache-2.0).
+* Classifier: [EfficientNet-Lite0](https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet/lite),
   converted and quantised by the TensorFlow team.
 * Runtime: [TensorFlow Lite](https://www.tensorflow.org/lite) 2.14.0 (Apache-2.0).
-* Labels: ImageNet class names (`ImageNetLabels.txt`).
+* Labels: ImageNet class names, COCO category names.
 * Everything else — UI, code, icons — written for this project.
 
 ## License

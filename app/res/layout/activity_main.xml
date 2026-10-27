@@ -119,6 +119,11 @@
                         android:scaleType="centerCrop"
                         android:visibility="gone" />
 
+                    <com.rajok.pehchanai.OverlayView
+                        android:id="@+id/overlay"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
                     <LinearLayout
                         android:id="@+id/placeholder"
                         android:layout_width="match_parent"
@@ -253,6 +258,37 @@
                 android:layout_marginTop="14dp"
                 android:orientation="vertical"
                 android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/objectsCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/card_bg"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        style="@style/SectionLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/objects_found" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/objects_hint"
+                        android:textColor="@color/textFaint"
+                        android:textSize="11.5sp" />
+
+                    <LinearLayout
+                        android:id="@+id/objectList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="vertical" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

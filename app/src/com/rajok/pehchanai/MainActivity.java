@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ExifInterface;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -68,8 +70,13 @@ public class MainActivity extends Activity {
     private LinearLayout otherList;
     private LinearLayout detailsList;
     private LinearLayout colorsRow;
+    private OverlayView overlay;
+    private View objectsCard;
+    private LinearLayout objectList;
 
     private Classifier classifier;
+    private Detector detector;
+    private List<Detector.Detection> lastDetections = new ArrayList<Detector.Detection>();
     private Bitmap currentBitmap;
     private ImageInfo currentInfo;
     private String topRawLabel = "";
@@ -105,6 +112,9 @@ public class MainActivity extends Activity {
         otherList = (LinearLayout) findViewById(R.id.otherList);
         detailsList = (LinearLayout) findViewById(R.id.detailsList);
         colorsRow = (LinearLayout) findViewById(R.id.colorsRow);
+        overlay = (OverlayView) findViewById(R.id.overlay);
+        objectsCard = findViewById(R.id.objectsCard);
+        objectList = (LinearLayout) findViewById(R.id.objectList);
 
         if (imageFrame != null) {
             imageFrame.setClipToOutline(true);
@@ -174,6 +184,10 @@ public class MainActivity extends Activity {
             classifier.close();
             classifier = null;
         }
+        if (detector != null) {
+            detector.close();
+            detector = null;
+        }
     }
 
     // ------------------------------------------------------------------ setup
@@ -184,6 +198,7 @@ public class MainActivity extends Activity {
             public void run() {
                 try {
                     classifier = new Classifier(getApplicationContext());
+                    detector = new Detector(getApplicationContext());
                 } catch (final Throwable t) {
                     main.post(new Runnable() {
                         @Override
@@ -489,6 +504,9 @@ public class MainActivity extends Activity {
         placeholder.setVisibility(View.GONE);
 
         resultsSection.setVisibility(View.GONE);
+        if (overlay != null) {
+            overlay.clear();
+        }
         setIdentifyEnabled(true);
 
         if (old != null && old != bitmap && !busy) {
@@ -514,12 +532,21 @@ public class MainActivity extends Activity {
                     if (classifier == null) {
                         classifier = new Classifier(getApplicationContext());
                     }
+                    if (detector == null) {
+                        try {
+                            detector = new Detector(getApplicationContext());
+                        } catch (Throwable ignored) {
+                        }
+                    }
+                    final List<Detector.Detection> found = detector == null
+                            ? new ArrayList<Detector.Detection>()
+                            : detector.detect(source);
                     final List<Classifier.Result> results = classifier.classify(source);
                     main.post(new Runnable() {
                         @Override
                         public void run() {
                             setLoading(false, null);
-                            showResults(results);
+                            showResults(results, found, source);
                         }
                     });
                 } catch (final Throwable t) {
@@ -535,7 +562,9 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void showResults(List<Classifier.Result> results) {
+    private void showResults(List<Classifier.Result> results, List<Detector.Detection> found,
+                             Bitmap source) {
+        showObjects(found, source);
         if (results == null || results.isEmpty()) {
             toast("Nothing clear found. Try a closer, well-lit photo.");
             return;
@@ -599,6 +628,170 @@ public class MainActivity extends Activity {
                 scroll.smoothScrollTo(0, Math.max(0, resultsSection.getTop() - dp(6)));
             }
         });
+    }
+
+    // -------------------------------------------------------- objects found
+
+    private void showObjects(List<Detector.Detection> found, Bitmap source) {
+        objectList.removeAllViews();
+        lastDetections = found == null ? new ArrayList<Detector.Detection>() : found;
+
+        if (lastDetections.isEmpty() || source == null) {
+            objectsCard.setVisibility(View.GONE);
+            overlay.clear();
+            return;
+        }
+
+        objectsCard.setVisibility(View.VISIBLE);
+        overlay.setResults(lastDetections, source.getWidth(), source.getHeight());
+
+        for (int i = 0; i < lastDetections.size(); i++) {
+            final Detector.Detection det = lastDetections.get(i);
+            final int index = i;
+            final Bitmap sourceBitmap = source;
+
+            LinearLayout row = new LinearLayout(this);
+            row.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            rowParams.topMargin = i == 0 ? 0 : dp(12);
+            row.setLayoutParams(rowParams);
+            row.setClickable(true);
+            row.setFocusable(true);
+
+            LinearLayout header = new LinearLayout(this);
+            header.setOrientation(LinearLayout.HORIZONTAL);
+            header.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            TextView name = new TextView(this);
+            name.setText(capitalize(det.label));
+            name.setTextColor(getResources().getColor(R.color.text));
+            name.setTextSize(14f);
+            name.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+            name.setMaxLines(1);
+            name.setEllipsize(android.text.TextUtils.TruncateAt.END);
+
+            TextView pct = new TextView(this);
+            pct.setText(Math.max(1, Math.round(det.score * 100f)) + "%");
+            pct.setTextColor(getResources().getColor(R.color.textDim));
+            pct.setTextSize(12.5f);
+
+            header.addView(name, new LinearLayout.LayoutParams(0,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+            header.addView(pct, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            row.addView(header);
+
+            LinearLayout bar = new LinearLayout(this);
+            bar.setOrientation(LinearLayout.HORIZONTAL);
+            bar.setBackgroundResource(R.drawable.track_bg);
+            LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dp(7));
+            barParams.topMargin = dp(6);
+            bar.setLayoutParams(barParams);
+
+            View fill = new View(this);
+            fill.setBackgroundResource(R.drawable.bar_fill);
+            View rest = new View(this);
+            float weight = Math.max(det.score, 0.012f);
+            bar.addView(fill, new LinearLayout.LayoutParams(0,
+                    ViewGroup.LayoutParams.MATCH_PARENT, weight));
+            bar.addView(rest, new LinearLayout.LayoutParams(0,
+                    ViewGroup.LayoutParams.MATCH_PARENT, Math.max(1f - weight, 0.012f)));
+            row.addView(bar);
+
+            row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    inspectObject(det, sourceBitmap, index);
+                }
+            });
+            objectList.addView(row);
+        }
+    }
+
+    /** Tapping an object re-runs the fine-detail model on just that part of the photo. */
+    private void inspectObject(final Detector.Detection det, final Bitmap source, final int index) {
+        if (busy || source == null) {
+            return;
+        }
+        overlay.setHighlighted(index);
+        setLoading(true, "Looking closer at the " + det.label + "\u2026");
+        final Bitmap crop = cropTo(source, det.box);
+
+        worker.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (classifier == null) {
+                        classifier = new Classifier(getApplicationContext());
+                    }
+                    final List<Classifier.Result> results = crop == null
+                            ? new ArrayList<Classifier.Result>()
+                            : classifier.classify(crop);
+                    main.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            setLoading(false, null);
+                            if (results.isEmpty()) {
+                                toast("Could not look closer at that object. Try a bigger photo.");
+                                return;
+                            }
+                            Classifier.Result top = results.get(0);
+                            topRawLabel = top.rawLabel;
+                            topPrettyLabel = top.label;
+                            topPercent = Math.max(1, Math.round(top.score * 100f));
+                            topLabel.setText(capitalize(top.label));
+                            topConfidence.setText(topPercent + "% match");
+                            topSentence.setText("Looking closely at the " + det.label
+                                    + " in your photo.");
+                            if (topPercent >= 60) {
+                                topRankNote.setText("High confidence");
+                            } else if (topPercent >= 35) {
+                                topRankNote.setText("Fairly confident");
+                            } else {
+                                topRankNote.setText("Best guess");
+                            }
+                            scroll.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    scroll.smoothScrollTo(0,
+                                            Math.max(0, resultsSection.getTop() - dp(6)));
+                                }
+                            });
+                        }
+                    });
+                } catch (Throwable t) {
+                    main.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            setLoading(false, null);
+                            toast("Could not look closer at that object.");
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /** Crops one detected box out of the photo, with a little breathing room. */
+    private Bitmap cropTo(Bitmap source, RectF box) {
+        try {
+            int w = source.getWidth();
+            int h = source.getHeight();
+            float padX = (box.right - box.left) * 0.06f;
+            float padY = (box.bottom - box.top) * 0.06f;
+            int left = Math.max(0, (int) ((box.left - padX) * w));
+            int top = Math.max(0, (int) ((box.top - padY) * h));
+            int right = Math.min(w, (int) ((box.right + padX) * w));
+            int bottom = Math.min(h, (int) ((box.bottom + padY) * h));
+            if (right - left < 16 || bottom - top < 16) {
+                return null;
+            }
+            return Bitmap.createBitmap(source, left, top, right - left, bottom - top);
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     private void addPossibilityRow(String label, float score, boolean first, float fillAlpha) {
@@ -771,8 +964,20 @@ public class MainActivity extends Activity {
         if (topPrettyLabel.length() == 0) {
             return "Identified with Pehchan AI.";
         }
-        return "Pehchan AI says this is " + withArticle(topPrettyLabel)
-                + " (" + topPercent + "% match).";
+        StringBuilder sb = new StringBuilder();
+        sb.append("Pehchan AI says this is ").append(withArticle(topPrettyLabel))
+                .append(" (").append(topPercent).append("% match).");
+        if (!lastDetections.isEmpty()) {
+            sb.append(" Objects in the photo: ");
+            for (int i = 0; i < lastDetections.size() && i < 4; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append(lastDetections.get(i).label);
+            }
+            sb.append(".");
+        }
+        return sb.toString();
     }
 
     private void openLink(String url) {
