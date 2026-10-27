@@ -499,6 +499,7 @@ public class MainActivity extends Activity {
 
         previewImage.setImageBitmap(bitmap);
         previewImage.setVisibility(View.VISIBLE);
+        fitFrameToPhoto(bitmap);
         previewImage.setAlpha(0f);
         previewImage.animate().alpha(1f).setDuration(220).start();
         placeholder.setVisibility(View.GONE);
@@ -512,6 +513,33 @@ public class MainActivity extends Activity {
         if (old != null && old != bitmap && !busy) {
             old.recycle();
         }
+    }
+
+    /**
+     * Gives the preview frame the photo's own aspect ratio (within limits) so the
+     * whole image is visible at a sensible size instead of being cropped or tiny.
+     */
+    private void fitFrameToPhoto(final Bitmap bitmap) {
+        if (imageFrame == null || bitmap == null || bitmap.getWidth() <= 0) {
+            return;
+        }
+        imageFrame.post(new Runnable() {
+            @Override
+            public void run() {
+                int width = imageFrame.getWidth();
+                if (width <= 0) {
+                    return;
+                }
+                float ratio = bitmap.getHeight() / (float) bitmap.getWidth();
+                int height = Math.round(width * ratio);
+                height = Math.max(dp(180), Math.min(height, dp(470)));
+                ViewGroup.LayoutParams params = imageFrame.getLayoutParams();
+                if (params != null && params.height != height) {
+                    params.height = height;
+                    imageFrame.setLayoutParams(params);
+                }
+            }
+        });
     }
 
     private void identify() {

@@ -136,14 +136,17 @@ pct = max(1, round(top_score * 100))
 rank_note = "High confidence" if pct >= 70 else ("Fairly confident" if pct >= 40 else "Best guess \u2014 try a closer photo")
 
 
-FRAME_W, FRAME_H = 294.0, 288.0   # inner content box of the preview frame (dp)
+# the app now sizes the frame to the photo's aspect ratio (clamped 180..470dp)
+_ratio = photo.size[1] / float(photo.size[0])
+FRAME_H_DP = max(180.0, min(470.0, round(294.0 * _ratio)))
+FRAME_W, FRAME_H = 294.0, FRAME_H_DP - 2.0   # inner content box of the preview frame (dp)
 
 
 def boxes_html():
     if not detections:
         return ""
     w, h = photo.size
-    scale = max(FRAME_W / w, FRAME_H / h)
+    scale = min(FRAME_W / w, FRAME_H / h)
     dw, dh = w * scale, h * scale
     ox, oy = (FRAME_W - dw) / 2.0, (FRAME_H - dh) / 2.0
     out = []
@@ -303,7 +306,7 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
     <div style="margin-top:7px;font:400 13.5px Roboto;line-height:1.4;color:#96A2BE">Animals, food, phones, gadgets, furniture &mdash; pick any photo and Pehchan AI finds every object in it.</div>
 
     <div class="card" style="margin-top:18px;padding:14px">
-      <div id="imageframe" style="height:290px;border-radius:18px;background:#0D1424;border:1px solid #232E46;overflow:hidden;position:relative">
+      <div id="imageframe" style="height:%(frame_h)spx;border-radius:18px;background:#0D1424;border:1px solid #232E46;overflow:hidden;position:relative">
         %(photo)s
         %(boxes)s
         %(placeholder)s
@@ -382,7 +385,7 @@ def build(screen):
     identify_style = "opacity:.45;"
     results_style = "display:none;"
     if screen in ("picked", "result", "details", "detected"):
-        photo_html = ('<img src="data:image/jpeg;base64,%s" style="width:100%%;height:100%%;object-fit:cover">' % img_b64)
+        photo_html = ('<img src="data:image/jpeg;base64,%s" style="width:100%%;height:100%%;object-fit:contain">' % img_b64)
         placeholder = ""
         identify_style = ""
     if screen in ("result", "details", "detected"):
@@ -394,6 +397,7 @@ def build(screen):
         "gal18": icon("gallery", "18px"),
         "cam18": icon("camera", "18px"),
         "photo": photo_html,
+        "frame_h": int(FRAME_H_DP),
         "boxes": boxes_html() if screen in ("result", "details", "detected") else "",
         "objects_card": objects_card() if screen in ("result", "details", "detected") else "",
         "hero_margin": ("12px" if detections else "0") if screen in ("result", "details", "detected") else "0",

@@ -16,18 +16,18 @@ Pehchan AI finds every object in the photo, boxes it, and tells you what it is.
 
 ## Download & install
 
-**[⬇ Download PehchanAI-v1.1.apk (14 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.1/PehchanAI-v1.1.apk)**
+**[⬇ Download PehchanAI-v1.2.apk (14 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.2/PehchanAI-v1.2.apk)**
 
-1. Tap the link on your phone (or open the [v1.1 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.1)).
+1. Tap the link on your phone (or open the [v1.2 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.2)).
 2. Android asks to allow installs from this source → allow.
 3. Install, open, done. **Android 5.0 (API 21) and newer**, any phone.
 
 ```
-SHA-256  3b955d419e7b2d44f65c41d73242a6acc1dae04d336307c373a8118c226155a4
+SHA-256  b02d3cf3ee0323f0715b45bff0408d3e42616268018267bbe1ad45a2f95b5fe9
 ```
 
 Signed with v1 + v2 + v3 schemes, so it installs cleanly on modern Android.
-Version 1.1 also installs *over* 1.0 (same signing key).
+Version 1.2 installs *over* 1.0 and 1.1 (same signing key).
 
 ## What it does
 
@@ -98,7 +98,7 @@ No Gradle — just the Android SDK build-tools, which keeps the build easy to re
 ```bash
 # needs: JDK 17, Android SDK build-tools 34 + platform android-35
 export SDK=/path/to/android-sdk
-bash app/build.sh          # → out/PehchanAI-v1.1.apk
+bash app/build.sh          # → out/PehchanAI-v1.2.apk
 ```
 
 `build.sh` runs the whole pipeline and prints each step:
@@ -114,7 +114,7 @@ only accepts updates signed with the same key.
 ### Why the models are not in the tree
 
 `app/assets/model.tflite` (5.2 MB) and `app/assets/detect.tflite` (4.0 MB) are attached to the
-[v1.1 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.1) instead of
+[v1.2 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.2) instead of
 being committed, because the GitHub API rejects binaries that large in a normal commit.
 `build.sh` downloads whichever one is missing, so a clean clone still builds with one command.
 Both label files *are* in the tree.
@@ -146,6 +146,11 @@ screenshots/                         UI previews (1080×2340)
 ```
 
 ## Changelog
+
+**v1.2** — the preview now shows the **whole photo**, never a cropped version: the image
+fits inside the frame (`fitCenter`) and the frame takes the photo's own aspect ratio
+(clamped between 180 and 470 dp), so a portrait shot is tall, a landscape shot is wide, and
+nothing is cut off. Detection boxes follow the same fit-inside transform.
 
 **v1.1** — object detection: every object in the photo is boxed and listed; tap an object to
 classify just that part. New `OBJECTS FOUND` card, box overlay, richer share text.

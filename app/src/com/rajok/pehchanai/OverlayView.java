@@ -89,8 +89,9 @@ public class OverlayView extends View {
 
         float viewW = getWidth();
         float viewH = getHeight();
-        // centre-crop: fill the view, crop the overflow, keep it centred
-        float scale = Math.max(viewW / imageWidth, viewH / imageHeight);
+        // fit-inside: the whole photo is visible, letterboxed and centred,
+        // exactly like the preview's fitCenter scale type
+        float scale = Math.min(viewW / imageWidth, viewH / imageHeight);
         float drawnW = imageWidth * scale;
         float drawnH = imageHeight * scale;
         float offsetX = (viewW - drawnW) / 2f;
