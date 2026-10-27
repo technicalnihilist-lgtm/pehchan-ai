@@ -1,0 +1,10 @@
+# build output
+build/
+out/
+*.idsig
+# signing material
+*.jks
+*.keystore
+# editor / os noise
+.DS_Store
+*.log
