@@ -70,16 +70,30 @@ dboxes = det.get_tensor(b_i)[0]
 dcls = det.get_tensor(c_i)[0].astype(int)
 dscr = det.get_tensor(s_i)[0]
 dnum = int(det.get_tensor(n_i)[0])
-detections = []
-seen = set()
+raw = []
 for i in range(dnum):
     if dscr[i] < 0.42:
         continue
     name = coco[dcls[i]] if 0 <= dcls[i] < len(coco) else "?"
-    if name == "???" or name in seen:
+    if name == "???":
         continue
-    seen.add(name)
-    detections.append((name, float(dscr[i]), [float(x) for x in dboxes[i]]))
+    raw.append((name, float(dscr[i]), [float(x) for x in dboxes[i]]))
+raw.sort(key=lambda d: -d[1])
+
+
+def _iou(a, b):
+    left, top = max(a[1], b[1]), max(a[0], b[0])
+    right, bottom = min(a[3], b[3]), min(a[2], b[2])
+    inter = max(0.0, right - left) * max(0.0, bottom - top)
+    union = (a[3] - a[1]) * (a[2] - a[0]) + (b[3] - b[1]) * (b[2] - b[0]) - inter
+    return 0.0 if union <= 0 else inter / union
+
+
+detections = []
+for cand in raw:
+    if any(k[0] == cand[0] and _iou(k[2], cand[2]) > 0.10 for k in detections):
+        continue
+    detections.append(cand)
 top_label, top_score = results[0]
 others = results[1:5]
 
@@ -169,7 +183,14 @@ def objects_card():
     if not detections:
         return ""
     rows = []
-    for i, (name, score, _) in enumerate(detections):
+    seen_rows = set()
+    shown = []
+    for name, score, box in detections:
+        if name.lower() in seen_rows:
+            continue
+        seen_rows.add(name.lower())
+        shown.append((name, score))
+    for i, (name, score) in enumerate(shown):
         rows.append(
             '<div style="margin-top:%dpx">'
             '<div style="display:flex;align-items:center">'

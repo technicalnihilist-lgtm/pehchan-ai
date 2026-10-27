@@ -128,35 +128,57 @@ public class Detector {
             input.recycle();
         }
 
-        // The graph's post-processing op returns: boxes [1,10,4], classes [1,10],
-        // scores [1,10], count [1]. Discover them by shape so a model swap is safe.
-        float[][][] boxes = new float[1][MAX_DETECTIONS][4];
-        float[][] classes = new float[1][MAX_DETECTIONS];
-        float[][] scores = new float[1][MAX_DETECTIONS];
-        float[][] count = new float[1][1];
-
+        // The graph's post-processing op returns boxes, classes, scores and a count.
+        // Each destination array MUST match its tensor's exact shape, so they are
+        // allocated from the shapes the interpreter reports rather than assumed.
         Map<Integer, Object> outputs = new HashMap<Integer, Object>();
-        boolean gotClasses = false;
+        int boxesIndex = -1;
+        int classesIndex = -1;
+        int scoresIndex = -1;
+        int countIndex = -1;
+
         int outputCount = interpreter.getOutputTensorCount();
         for (int i = 0; i < outputCount; i++) {
             int[] shape = interpreter.getOutputTensor(i).shape();
-            if (shape.length == 3) {
-                outputs.put(i, boxes);
-            } else if (shape.length == 2) {
-                if (!gotClasses) {
-                    outputs.put(i, classes);
-                    gotClasses = true;
-                } else {
-                    outputs.put(i, scores);
-                }
-            } else {
-                outputs.put(i, count);
+            outputs.put(i, allocateForShape(shape));
+            if (shape.length == 3 && boxesIndex < 0) {
+                boxesIndex = i;
+            } else if (shape.length == 2 && classesIndex < 0) {
+                classesIndex = i;
+            } else if (shape.length == 2 && scoresIndex < 0) {
+                scoresIndex = i;
+            } else if (shape.length <= 1 && countIndex < 0) {
+                countIndex = i;
             }
+        }
+        if (boxesIndex < 0 || classesIndex < 0 || scoresIndex < 0) {
+            return results;   // not the model we expect; nothing to draw
         }
 
         interpreter.runForMultipleInputsOutputs(new Object[]{buffer}, outputs);
 
-        int found = Math.min(MAX_DETECTIONS, Math.max(0, (int) count[0][0]));
+        float[][][] boxes = (float[][][]) outputs.get(boxesIndex);
+        float[][] classes = (float[][]) outputs.get(classesIndex);
+        float[][] scores = (float[][]) outputs.get(scoresIndex);
+
+        int found = Math.min(boxes[0].length, scores[0].length);
+        if (countIndex >= 0) {
+            Object countOut = outputs.get(countIndex);
+            float declared = MAX_DETECTIONS;
+            if (countOut instanceof float[]) {
+                float[] flat = (float[]) countOut;
+                if (flat.length > 0) {
+                    declared = flat[0];
+                }
+            } else if (countOut instanceof float[][]) {
+                float[][] nested = (float[][]) countOut;
+                if (nested.length > 0 && nested[0].length > 0) {
+                    declared = nested[0][0];
+                }
+            }
+            found = Math.min(found, Math.max(0, (int) declared));
+        }
+
         for (int i = 0; i < found; i++) {
             float score = scores[0][i];
             if (score < MIN_SCORE) {
@@ -186,7 +208,58 @@ public class Detector {
                 return Float.compare(b.score, a.score);
             }
         });
-        return results;
+
+        // The model can return several overlapping boxes for the same item.
+        // Keep the best one per object, but still allow two dogs side by side.
+        List<Detection> unique = new ArrayList<Detection>();
+        for (int i = 0; i < results.size(); i++) {
+            Detection candidate = results.get(i);
+            boolean duplicate = false;
+            for (int j = 0; j < unique.size(); j++) {
+                Detection kept = unique.get(j);
+                if (kept.label.equals(candidate.label)
+                        && intersectionOverUnion(kept.box, candidate.box) > 0.10f) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                unique.add(candidate);
+            }
+        }
+        return unique;
+    }
+
+    private static float intersectionOverUnion(RectF a, RectF b) {
+        float left = Math.max(a.left, b.left);
+        float top = Math.max(a.top, b.top);
+        float right = Math.min(a.right, b.right);
+        float bottom = Math.min(a.bottom, b.bottom);
+        float interW = Math.max(0f, right - left);
+        float interH = Math.max(0f, bottom - top);
+        float intersection = interW * interH;
+        float union = a.width() * a.height() + b.width() * b.height() - intersection;
+        return union <= 0f ? 0f : intersection / union;
+    }
+
+    /** Allocates a float array whose shape matches the tensor exactly. */
+    private static Object allocateForShape(int[] shape) {
+        int a = shape.length > 0 ? Math.max(shape[0], 1) : 1;
+        int b = shape.length > 1 ? Math.max(shape[1], 1) : 1;
+        int c = shape.length > 2 ? Math.max(shape[2], 1) : 1;
+        int d = shape.length > 3 ? Math.max(shape[3], 1) : 1;
+        switch (shape.length) {
+            case 0:
+                return new float[1];
+            case 1:
+                return new float[a];
+            case 2:
+                return new float[a][b];
+            case 3:
+                return new float[a][b][c];
+            default:
+                return new float[a][b][c][d];
+        }
     }
 
     private static float clamp(float v) {

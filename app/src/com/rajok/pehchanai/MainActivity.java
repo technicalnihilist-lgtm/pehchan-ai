@@ -81,6 +81,7 @@ public class MainActivity extends Activity {
     private ImageInfo currentInfo;
     private String topRawLabel = "";
     private String topPrettyLabel = "";
+    private String lastError = "none";
     private int topPercent = 0;
     private File pendingCapture;
     private boolean busy = false;
@@ -118,6 +119,17 @@ public class MainActivity extends Activity {
 
         if (imageFrame != null) {
             imageFrame.setClipToOutline(true);
+        }
+
+        View header = findViewById(R.id.header);
+        if (header != null) {
+            header.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    showDiagnostics();
+                    return true;
+                }
+            });
         }
 
         btnGallery.setOnClickListener(new View.OnClickListener() {
@@ -556,38 +568,74 @@ public class MainActivity extends Activity {
         worker.execute(new Runnable() {
             @Override
             public void run() {
+                final List<Classifier.Result> results = new ArrayList<Classifier.Result>();
+                final List<Detector.Detection> found = new ArrayList<Detector.Detection>();
+                String problem = null;
+
+                // The two models are independent: if one fails the other still shows.
                 try {
                     if (classifier == null) {
                         classifier = new Classifier(getApplicationContext());
                     }
-                    if (detector == null) {
-                        try {
-                            detector = new Detector(getApplicationContext());
-                        } catch (Throwable ignored) {
-                        }
-                    }
-                    final List<Detector.Detection> found = detector == null
-                            ? new ArrayList<Detector.Detection>()
-                            : detector.detect(source);
-                    final List<Classifier.Result> results = classifier.classify(source);
-                    main.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            setLoading(false, null);
-                            showResults(results, found, source);
-                        }
-                    });
-                } catch (final Throwable t) {
-                    main.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            setLoading(false, null);
-                            toast("Could not analyse this photo. Please try another one.");
-                        }
-                    });
+                    results.addAll(classifier.classify(source));
+                } catch (Throwable t) {
+                    problem = describe("classifier", t);
                 }
+
+                try {
+                    if (detector == null) {
+                        detector = new Detector(getApplicationContext());
+                    }
+                    found.addAll(detector.detect(source));
+                } catch (Throwable t) {
+                    if (problem == null) {
+                        problem = describe("detector", t);
+                    }
+                }
+
+                final String problemText = problem;
+                main.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setLoading(false, null);
+                        if (results.isEmpty() && found.isEmpty()) {
+                            toast(problemText != null
+                                    ? "Could not analyse this photo. Long-press the app name for details."
+                                    : "Nothing clear found. Try a closer, well-lit photo.");
+                            return;
+                        }
+                        showResults(results, found, source);
+                    }
+                });
             }
         });
+    }
+
+    /** Keeps the last failure around so the user can show it to someone (long-press header). */
+    private String describe(String tag, Throwable t) {
+        String detail = t.getClass().getSimpleName()
+                + (t.getMessage() == null ? "" : ": " + t.getMessage());
+        lastError = tag + " — " + detail;
+        android.util.Log.e("PehchanAI", lastError, t);
+        return lastError;
+    }
+
+    private void showDiagnostics() {
+        String abi = Build.SUPPORTED_ABIS != null && Build.SUPPORTED_ABIS.length > 0
+                ? Build.SUPPORTED_ABIS[0] : "unknown";
+        String message = "Pehchan AI 1.3\n"
+                + Build.MANUFACTURER + " " + Build.MODEL + "\n"
+                + "Android " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n"
+                + "CPU: " + abi + "\n\n"
+                + "Last error:\n" + lastError;
+        try {
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("App details")
+                    .setMessage(message)
+                    .setPositiveButton("Close", null)
+                    .show();
+        } catch (Throwable ignored) {
+        }
     }
 
     private void showResults(List<Classifier.Result> results, List<Detector.Detection> found,
@@ -673,10 +721,15 @@ public class MainActivity extends Activity {
         objectsCard.setVisibility(View.VISIBLE);
         overlay.setResults(lastDetections, source.getWidth(), source.getHeight());
 
+        java.util.Set<String> listed = new java.util.HashSet<String>();
         for (int i = 0; i < lastDetections.size(); i++) {
             final Detector.Detection det = lastDetections.get(i);
             final int index = i;
             final Bitmap sourceBitmap = source;
+            // one row per object type — several boxes of the same thing are one row
+            if (!listed.add(det.label.toLowerCase(Locale.US))) {
+                continue;
+            }
 
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.VERTICAL);
