@@ -2,7 +2,7 @@
 # Pehchan AI — manual Android build. No Gradle, no AndroidX.
 #
 #   SDK=/path/to/android-sdk bash app/build.sh
-#   → out/PehchanAI-v1.4.apk  (signed, installable)
+#   → out/PehchanAI-v1.5.apk  (signed, installable)
 #
 # The two model files are attached to the GitHub release rather than committed
 # (the GitHub API refuses binaries that large), so this script fetches whichever
@@ -34,7 +34,7 @@ BUILD="$ROOT/build"
 OUT="$ROOT/out"
 DEPS="$BUILD/deps"
 TFLITE_VER=2.14.0
-REL="https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.4"
+REL="https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.5"
 
 rm -rf "$BUILD" "$OUT"
 mkdir -p "$BUILD/res" "$BUILD/gen" "$BUILD/classes" "$BUILD/dex" "$OUT" "$DEPS"
@@ -81,8 +81,8 @@ echo "[2/7] linking resources + manifest + assets"
   --java "$BUILD/gen" \
   --min-sdk-version 21 \
   --target-sdk-version 34 \
-  --version-code 5 \
-  --version-name 1.4 \
+  --version-code 6 \
+  --version-name 1.5 \
   "$BUILD/res.zip"
 
 echo "[3/7] compiling java"
@@ -137,8 +137,8 @@ fi
   --ks "$APP/keystore.jks" --ks-key-alias pehchan \
   --ks-pass pass:pehchan123 --key-pass pass:pehchan123 \
   --v1-signing-enabled true --v2-signing-enabled true \
-  --out "$OUT/PehchanAI-v1.4.apk" "$OUT/pehchan-ai-aligned.apk"
+  --out "$OUT/PehchanAI-v1.5.apk" "$OUT/pehchan-ai-aligned.apk"
 
 echo
-echo "=== done: $OUT/PehchanAI-v1.4.apk ==="
-ls -lh "$OUT/PehchanAI-v1.4.apk"
+echo "=== done: $OUT/PehchanAI-v1.5.apk ==="
+ls -lh "$OUT/PehchanAI-v1.5.apk"

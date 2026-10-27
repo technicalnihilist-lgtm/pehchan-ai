@@ -47,17 +47,17 @@ public class OverlayView extends View {
     private void init() {
         float d = getResources().getDisplayMetrics().density;
         boxPaint.setStyle(Paint.Style.STROKE);
-        boxPaint.setStrokeWidth(2.2f * d);
+        boxPaint.setStrokeWidth(1.5f * d);
         boxPaint.setColor(Color.parseColor("#A78BFA"));
 
         fillPaint.setStyle(Paint.Style.FILL);
-        fillPaint.setColor(Color.parseColor("#337C5CFF"));
+        fillPaint.setColor(Color.parseColor("#1A7C5CFF"));
 
         chipPaint.setStyle(Paint.Style.FILL);
         chipPaint.setColor(Color.parseColor("#E6121A2C"));
 
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(9.5f * d);
+        textPaint.setTextSize(8.5f * d);
         textPaint.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         setLayerType(LAYER_TYPE_SOFTWARE, null);
     }
@@ -110,16 +110,16 @@ public class OverlayView extends View {
 
             boolean active = (i == highlighted);
             boxPaint.setColor(active ? Color.parseColor("#4ADE80") : Color.parseColor("#A78BFA"));
-            boxPaint.setStrokeWidth((active ? 3.0f : 2.2f) * d);
-            fillPaint.setColor(active ? Color.parseColor("#334ADE80") : Color.parseColor("#2A7C5CFF"));
+            boxPaint.setStrokeWidth((active ? 2.2f : 1.5f) * d);
+            fillPaint.setColor(active ? Color.parseColor("#264ADE80") : Color.parseColor("#1A7C5CFF"));
 
-            canvas.drawRoundRect(r, 10f * d, 10f * d, fillPaint);
-            canvas.drawRoundRect(r, 10f * d, 10f * d, boxPaint);
+            canvas.drawRoundRect(r, 8f * d, 8f * d, fillPaint);
+            canvas.drawRoundRect(r, 8f * d, 8f * d, boxPaint);
 
             String text = det.label + "  " + Math.round(det.score * 100) + "%";
             float textWidth = textPaint.measureText(text);
-            float chipH = textPaint.getTextSize() + 6f * d;
-            float chipW = textWidth + 10f * d;
+            float chipH = textPaint.getTextSize() + 5f * d;
+            float chipW = textWidth + 9f * d;
 
             float chipLeft = r.left;
             float chipTop = r.top - chipH - 2f * d;
@@ -133,8 +133,8 @@ public class OverlayView extends View {
                 chipLeft = pad;
             }
             RectF chip = new RectF(chipLeft, chipTop, chipLeft + chipW, chipTop + chipH);
-            canvas.drawRoundRect(chip, 7f * d, 7f * d, chipPaint);
-            canvas.drawText(text, chip.left + 5f * d,
+            canvas.drawRoundRect(chip, 5f * d, 5f * d, chipPaint);
+            canvas.drawText(text, chip.left + 4.5f * d,
                     chip.bottom - textPaint.getTextSize() * 0.26f - 2f * d, textPaint);
         }
     }

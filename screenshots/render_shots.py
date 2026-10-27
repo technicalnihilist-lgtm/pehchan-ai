@@ -172,10 +172,10 @@ def boxes_html():
         bh = (bottom - top) * dh
         out.append(
             '<div style="position:absolute;left:%.1fpx;top:%.1fpx;width:%.1fpx;height:%.1fpx;'
-            'border:2.2px solid #A78BFA;border-radius:10px;background:rgba(124,92,255,.16)"></div>'
+            'border:1.5px solid #A78BFA;border-radius:8px;background:rgba(124,92,255,.10)"></div>'
             '<div style="position:absolute;left:%.1fpx;top:%.1fpx;background:rgba(18,26,44,.9);'
-            'border-radius:7px;padding:2px 5px;font:500 9.5px Roboto;color:#fff;white-space:nowrap">%s &nbsp;%d%%</div>'
-            % (x, y, bw, bh, max(2.0, x), (y - 18 if y >= 20 else y + 2), cap(name), round(score * 100)))
+            'border-radius:5px;padding:2px 4px;font:500 8.5px Roboto;color:#fff;white-space:nowrap">%s &nbsp;%d%%</div>'
+            % (x, y, bw, bh, max(2.0, x), (y - 16 if y >= 18 else y + 2), cap(name), round(score * 100)))
     return "".join(out)
 
 
@@ -292,10 +292,10 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
 .card { background:#141B2E; border:1px solid #26314A; border-radius:20px; }
 .label { font:500 10.5px Roboto; letter-spacing:.16em; color:#6B7793; }
 .btnrow { display:flex; gap:10px; }
-.btn-soft { height:50px; border-radius:16px; background:#1B2338; border:1px solid #2B3552;
-  display:flex; align-items:center; justify-content:center; gap:8px; font:500 14px Roboto; color:#F2F5FF; }
-.btn-identify { height:56px; border-radius:18px; background:linear-gradient(90deg,#8B5CFF,#4F8CFF);
-  display:flex; align-items:center; justify-content:center; gap:9px; font:500 16px Roboto; color:#fff; }
+.btn-soft { height:42px; border-radius:16px; background:#1B2338; border:1px solid #2B3552;
+  display:flex; align-items:center; justify-content:center; gap:6px; font:500 13px Roboto; color:#F2F5FF; }
+.btn-identify { height:46px; border-radius:18px; background:linear-gradient(90deg,#8B5CFF,#4F8CFF);
+  display:flex; align-items:center; justify-content:center; gap:8px; font:500 15px Roboto; color:#fff; }
 .btn-ghost { height:52px; border-radius:16px; background:#121A2C; border:1px solid #33406A;
   display:flex; align-items:center; justify-content:center; gap:9px; font:500 14px Roboto; color:#F2F5FF; }
 .btn-ghost.sm { height:50px; font-size:13.5px; }

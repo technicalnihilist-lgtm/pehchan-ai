@@ -16,18 +16,18 @@ Pehchan AI finds every object in the photo, boxes it, and tells you what it is.
 
 ## Download & install
 
-**[⬇ Download PehchanAI-v1.4.apk (14 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.4/PehchanAI-v1.4.apk)**
+**[⬇ Download PehchanAI-v1.5.apk (14 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.5/PehchanAI-v1.5.apk)**
 
-1. Tap the link on your phone (or open the [v1.4 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.4)).
+1. Tap the link on your phone (or open the [v1.5 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.5)).
 2. Android asks to allow installs from this source → allow.
 3. Install, open, done. **Android 5.0 (API 21) and newer**, any phone.
 
 ```
-SHA-256  e8d9086e18fbc3b7131726cc51ed95290ef4bce2be42afcfc4da3fd3ca820d10
+SHA-256  3678382ae6b7e3255aa4e6a8c31214cb0e16574347dac8a8f8ac1295b77279b2
 ```
 
 Signed with v1 + v2 + v3 schemes, so it installs cleanly on modern Android.
-Version 1.4 installs *over* v1.0–v1.3 (same signing key).
+Version 1.5 installs *over* v1.0–v1.4 (same signing key).
 
 ## What it does
 
@@ -98,7 +98,7 @@ No Gradle — just the Android SDK build-tools, which keeps the build easy to re
 ```bash
 # needs: JDK 17, Android SDK build-tools 34 + platform android-35
 export SDK=/path/to/android-sdk
-bash app/build.sh          # → out/PehchanAI-v1.4.apk
+bash app/build.sh          # → out/PehchanAI-v1.5.apk
 ```
 
 `build.sh` runs the whole pipeline and prints each step:
@@ -114,7 +114,7 @@ only accepts updates signed with the same key.
 ### Why the models are not in the tree
 
 `app/assets/model.tflite` (5.2 MB) and `app/assets/detect.tflite` (4.0 MB) are attached to the
-[v1.4 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.4) instead of
+[v1.5 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.5) instead of
 being committed, because the GitHub API rejects binaries that large in a normal commit.
 `build.sh` downloads whichever one is missing, so a clean clone still builds with one command.
 Both label files *are* in the tree.
@@ -146,6 +146,10 @@ screenshots/                         UI previews (1080×2340)
 ```
 
 ## Changelog
+
+**v1.5** — smaller chrome, more photo: Gallery and Camera are 42 dp tall and Identify 46 dp
+(13 sp / 15 sp text) instead of 50/56 dp, and the boxes drawn on the photo are lighter —
+1.5 dp outline, much fainter fill, smaller label chips — so the image itself stays readable.
 
 **v1.4** — slimmer UI: the confidence bars in OBJECTS FOUND and OTHER POSSIBILITIES are
 4 dp instead of 7 dp with tighter row spacing, so the lists read as data instead of blocks,

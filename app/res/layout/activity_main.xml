@@ -169,55 +169,55 @@
                     <TextView
                         android:id="@+id/btnGallery"
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
+                        android:layout_height="42dp"
                         android:layout_weight="1"
                         android:background="@drawable/btn_soft"
                         android:clickable="true"
                         android:drawableStart="@drawable/ic_gallery"
-                        android:drawablePadding="8dp"
+                        android:drawablePadding="6dp"
                         android:drawableTint="@color/text"
                         android:focusable="true"
                         android:fontFamily="sans-serif-medium"
                         android:gravity="center"
                         android:text="@string/btn_gallery"
                         android:textColor="@color/text"
-                        android:textSize="14sp" />
+                        android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/btnCamera"
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
+                        android:layout_height="42dp"
                         android:layout_marginStart="10dp"
                         android:layout_weight="1"
                         android:background="@drawable/btn_soft"
                         android:clickable="true"
                         android:drawableStart="@drawable/ic_camera"
-                        android:drawablePadding="8dp"
+                        android:drawablePadding="6dp"
                         android:drawableTint="@color/text"
                         android:focusable="true"
                         android:fontFamily="sans-serif-medium"
                         android:gravity="center"
                         android:text="@string/btn_camera"
                         android:textColor="@color/text"
-                        android:textSize="14sp" />
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <TextView
                     android:id="@+id/btnIdentify"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="46dp"
                     android:layout_marginTop="10dp"
                     android:alpha="0.45"
                     android:background="@drawable/btn_primary"
                     android:clickable="true"
                     android:drawableStart="@drawable/ic_sparkle"
-                    android:drawablePadding="9dp"
+                    android:drawablePadding="8dp"
                     android:focusable="true"
                     android:fontFamily="sans-serif-medium"
                     android:gravity="center"
                     android:text="@string/btn_identify"
                     android:textColor="@color/white"
-                    android:textSize="16sp" />
+                    android:textSize="15sp" />
             </LinearLayout>
 
             <!-- ===== loading ===== -->
@@ -438,7 +438,7 @@
                     <TextView
                         android:id="@+id/btnWiki"
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
+                        android:layout_height="42dp"
                         android:layout_weight="1"
                         android:background="@drawable/btn_ghost"
                         android:clickable="true"
@@ -455,7 +455,7 @@
                     <TextView
                         android:id="@+id/btnShare"
                         android:layout_width="0dp"
-                        android:layout_height="50dp"
+                        android:layout_height="42dp"
                         android:layout_marginStart="10dp"
                         android:layout_weight="1"
                         android:background="@drawable/btn_ghost"
