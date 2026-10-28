@@ -16,18 +16,18 @@ Pehchan AI finds every object in the photo, boxes it, and tells you what it is.
 
 ## Download & install
 
-**[⬇ Download PehchanAI-v1.5.apk (14 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.5/PehchanAI-v1.5.apk)**
+**[⬇ Download PehchanAI-v1.6.apk (14 MB)](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/download/v1.6/PehchanAI-v1.6.apk)**
 
-1. Tap the link on your phone (or open the [v1.5 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.5)).
+1. Tap the link on your phone (or open the [v1.6 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.6)).
 2. Android asks to allow installs from this source → allow.
 3. Install, open, done. **Android 5.0 (API 21) and newer**, any phone.
 
 ```
-SHA-256  3678382ae6b7e3255aa4e6a8c31214cb0e16574347dac8a8f8ac1295b77279b2
+SHA-256  01cf5fbf298b3f0dcfb68aaf3765e739920c9718e6169346a815f66401037c48
 ```
 
 Signed with v1 + v2 + v3 schemes, so it installs cleanly on modern Android.
-Version 1.5 installs *over* v1.0–v1.4 (same signing key).
+Version 1.6 installs *over* v1.0–v1.5 (same signing key).
 
 ## What it does
 
@@ -98,7 +98,7 @@ No Gradle — just the Android SDK build-tools, which keeps the build easy to re
 ```bash
 # needs: JDK 17, Android SDK build-tools 34 + platform android-35
 export SDK=/path/to/android-sdk
-bash app/build.sh          # → out/PehchanAI-v1.5.apk
+bash app/build.sh          # → out/PehchanAI-v1.6.apk
 ```
 
 `build.sh` runs the whole pipeline and prints each step:
@@ -114,7 +114,7 @@ only accepts updates signed with the same key.
 ### Why the models are not in the tree
 
 `app/assets/model.tflite` (5.2 MB) and `app/assets/detect.tflite` (4.0 MB) are attached to the
-[v1.5 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.5) instead of
+[v1.6 release](https://github.com/technicalnihilist-lgtm/pehchan-ai/releases/tag/v1.6) instead of
 being committed, because the GitHub API rejects binaries that large in a normal commit.
 `build.sh` downloads whichever one is missing, so a clean clone still builds with one command.
 Both label files *are* in the tree.
@@ -146,6 +146,12 @@ screenshots/                         UI previews (1080×2340)
 ```
 
 ## Changelog
+
+**v1.6** — liquid-glass look. Every surface is now a translucent pane: cards and buttons use
+a white 4–15% gradient fill with a 1 dp hairline border, the top-match card carries a violet
+tint, pills and progress tracks are see-through, and the background has three soft colour
+glows (violet, blue, teal) so the glass has something to show through. Pure drawables — no
+blur dependency, so it looks the same on Android 5 through 15.
 
 **v1.5** — smaller chrome, more photo: Gallery and Camera are 42 dp tall and Identify 46 dp
 (13 sp / 15 sp text) instead of 50/56 dp, and the boxes drawn on the photo are lighter —

@@ -2,22 +2,22 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <gradient
-                android:angle="270"
-                android:startColor="#0A0F1C"
-                android:centerColor="#080B14"
-                android:endColor="#05070E" />
+            <gradient android:angle="270" android:startColor="#0B1020" android:centerColor="#080C17" android:endColor="#05070E" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <gradient
-                android:type="radial"
-                android:centerX="0.9"
-                android:centerY="0.02"
-                android:gradientRadius="440dp"
-                android:startColor="#4D6C5CE7"
-                android:endColor="#006C5CE7" />
+            <gradient android:type="radial" android:centerX="0.88" android:centerY="0.03" android:gradientRadius="430dp" android:startColor="#668B5CFF" android:endColor="#008B5CFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.06" android:centerY="0.42" android:gradientRadius="380dp" android:startColor="#4D3E7BFF" android:endColor="#003E7BFF" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:type="radial" android:centerX="0.7" android:centerY="0.95" android:gradientRadius="420dp" android:startColor="#3322D3EE" android:endColor="#0022D3EE" />
         </shape>
     </item>
 </layer-list>

@@ -22,8 +22,8 @@ OUT = os.path.join(WORK, "shots")
 os.makedirs(OUT, exist_ok=True)
 
 # ---------------------------------------------------------------- model run
-labels = [l.strip() for l in open(os.path.join(WORK, "app/assets/labels.txt"), encoding="utf-8") if l.strip()]
-interp = Interpreter(model_path=os.path.join(WORK, "app/assets/model.tflite"), num_threads=2)
+labels = [l.strip() for l in open(os.path.join(WORK, "repo/app/assets/labels.txt"), encoding="utf-8") if l.strip()]
+interp = Interpreter(model_path=os.path.join(WORK, "repo/app/assets/model.tflite"), num_threads=2)
 interp.allocate_tensors()
 inp = interp.get_input_details()[0]
 out = interp.get_output_details()[0]
@@ -56,8 +56,8 @@ def pretty(raw):
 results = [(pretty(labels[i]), float(probs[i])) for i in order]
 
 # ---- object detector (same preprocessing the app uses) ----------------------
-coco = [l.strip() for l in open(os.path.join(WORK, "app/assets/coco_labels.txt"), encoding="utf-8") if l.strip()]
-det = Interpreter(model_path=os.path.join(WORK, "app/assets/detect.tflite"), num_threads=2)
+coco = [l.strip() for l in open(os.path.join(WORK, "repo/app/assets/coco_labels.txt"), encoding="utf-8") if l.strip()]
+det = Interpreter(model_path=os.path.join(WORK, "repo/app/assets/detect.tflite"), num_threads=2)
 det.allocate_tensors()
 din = det.get_input_details()[0]
 douts = det.get_output_details()
@@ -196,7 +196,7 @@ def objects_card():
             '<div style="display:flex;align-items:center">'
             '<div style="flex:1;font:500 14px Roboto;color:#F2F5FF">%s</div>'
             '<div style="font:400 12.5px Roboto;color:#96A2BE">%d%%</div></div>'
-            '<div style="margin-top:5px;height:4px;border-radius:100px;background:#1D2740;display:flex;overflow:hidden">'
+            '<div style="margin-top:5px;height:4px;border-radius:100px;background:rgba(255,255,255,.12);display:flex;overflow:hidden">'
             '<div style="width:%.1f%%;background:linear-gradient(90deg,#8B5CFF,#4F8CFF)"></div></div></div>'
             % (0 if i == 0 else 10, cap(name), max(1, round(score * 100)), max(1.2, score * 100)))
     return ('<div class="card" style="padding:16px">'
@@ -243,7 +243,7 @@ def bars():
           <div style="flex:1;font:500 14px Roboto;color:#F2F5FF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">%s</div>
           <div style="font:400 12.5px Roboto;color:#96A2BE">%d%%</div>
         </div>
-        <div style="margin-top:5px;height:4px;border-radius:100px;background:#1D2740;display:flex;overflow:hidden">
+        <div style="margin-top:5px;height:4px;border-radius:100px;background:rgba(255,255,255,.12);display:flex;overflow:hidden">
           <div style="width:%.1f%%;background:linear-gradient(90deg,#8B5CFF,#4F8CFF);opacity:%.2f"></div>
         </div>
       </div>""" % (0 if i == 0 else 12, cap(label), max(1, round(score * 100)),
@@ -282,21 +282,23 @@ HTML = """<!DOCTYPE html>
 html,body { width:360px; height:780px; overflow:hidden; }
 body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
 .screen { position:relative; width:360px; height:780px; overflow:hidden;
-  background:radial-gradient(420px 420px at 90%% -2%%, rgba(108,92,231,.30), rgba(108,92,231,0) 70%%),
-             linear-gradient(180deg,#0A0F1C 0%%,#080B14 55%%,#05070E 100%%); }
+  background:radial-gradient(430px 430px at 88%% 3%%, rgba(139,92,255,.40), rgba(139,92,255,0) 70%%),
+             radial-gradient(380px 380px at 6%% 42%%, rgba(62,123,255,.30), rgba(62,123,255,0) 70%%),
+             radial-gradient(420px 420px at 70%% 95%%, rgba(34,211,238,.20), rgba(34,211,238,0) 70%%),
+             linear-gradient(180deg,#0B1020 0%%,#080C17 55%%,#05070E 100%%); }
 .statusbar { height:26px; background:#080B14; display:flex; align-items:center; justify-content:space-between;
   padding:0 16px; font:500 11.5px Roboto; color:#F2F5FF; letter-spacing:.2px; }
 .statusbar .right { display:flex; align-items:center; gap:5px; }
 .scroll { height:754px; overflow:hidden; }
 .content { padding:14px 18px 30px 18px; }
-.card { background:#141B2E; border:1px solid #26314A; border-radius:20px; }
+.card { background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05) 55%%, rgba(255,255,255,.04)); border:1px solid rgba(255,255,255,.22); border-radius:22px; }
 .label { font:500 10.5px Roboto; letter-spacing:.16em; color:#6B7793; }
 .btnrow { display:flex; gap:10px; }
-.btn-soft { height:42px; border-radius:16px; background:#1B2338; border:1px solid #2B3552;
+.btn-soft { height:42px; border-radius:16px; background:linear-gradient(180deg, rgba(255,255,255,.15), rgba(255,255,255,.05)); border:1px solid rgba(255,255,255,.25);
   display:flex; align-items:center; justify-content:center; gap:6px; font:500 13px Roboto; color:#F2F5FF; }
-.btn-identify { height:46px; border-radius:18px; background:linear-gradient(90deg,#8B5CFF,#4F8CFF);
+.btn-identify { height:46px; border-radius:18px; border:1px solid rgba(255,255,255,.40); background:linear-gradient(135deg, rgba(139,92,255,.90), rgba(110,107,245,.80) 50%%, rgba(79,140,255,.80));
   display:flex; align-items:center; justify-content:center; gap:8px; font:500 15px Roboto; color:#fff; }
-.btn-ghost { height:52px; border-radius:16px; background:#121A2C; border:1px solid #33406A;
+.btn-ghost { height:52px; border-radius:16px; background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.20);
   display:flex; align-items:center; justify-content:center; gap:9px; font:500 14px Roboto; color:#F2F5FF; }
 .btn-ghost.sm { height:50px; font-size:13.5px; }
 .navpill { position:absolute; bottom:7px; left:50%%; transform:translateX(-50%%);
@@ -315,19 +317,19 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
   <div class="scroll">
    <div class="content" id="content">
     <div style="display:flex;align-items:center">
-      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(315deg,#8B5CFF,#4F8CFF);display:flex;align-items:center;justify-content:center">%(sparkle40)s</div>
+      <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(315deg, rgba(139,92,255,.95), rgba(62,123,255,.85));border:1px solid rgba(255,255,255,.50);display:flex;align-items:center;justify-content:center">%(sparkle40)s</div>
       <div style="flex:1;margin-left:11px">
         <div style="font:900 19px Roboto;letter-spacing:-.2px">Pehchan AI</div>
         <div style="font:400 11px Roboto;color:#96A2BE;margin-top:1px">Image identifier &middot; on-device AI</div>
       </div>
-      <div style="background:#1F1A3D;border:1px solid #3E3670;border-radius:100px;padding:5px 10px;font:500 9.5px Roboto;letter-spacing:.1em;color:#A78BFA">OFFLINE</div>
+      <div style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.35);border-radius:100px;padding:5px 10px;font:500 9.5px Roboto;letter-spacing:.1em;color:#A78BFA">OFFLINE</div>
     </div>
 
     <div style="margin-top:22px;font:900 27px Roboto;line-height:1.16;letter-spacing:-.3px">What&rsquo;s in your photo?</div>
     <div style="margin-top:7px;font:400 13.5px Roboto;line-height:1.4;color:#96A2BE">Animals, food, phones, gadgets, furniture &mdash; pick any photo and Pehchan AI finds every object in it.</div>
 
     <div class="card" style="margin-top:18px;padding:14px">
-      <div id="imageframe" style="height:%(frame_h)spx;border-radius:18px;background:#0D1424;border:1px solid #232E46;overflow:hidden;position:relative">
+      <div id="imageframe" style="height:%(frame_h)spx;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.20);overflow:hidden;position:relative">
         %(photo)s
         %(boxes)s
         %(placeholder)s
@@ -346,7 +348,7 @@ body { font-family:Roboto,sans-serif; background:#080B14; color:#F2F5FF; }
         <div style="margin-top:6px;font:900 25px Roboto;letter-spacing:-.2px">%(top_label)s</div>
         <div style="margin-top:5px;font:400 13px Roboto;color:#96A2BE;line-height:1.35">This looks like %(top_article)s.</div>
         <div style="margin-top:13px;display:flex;align-items:center">
-          <div style="background:#12291F;border:1px solid #2A6B4A;border-radius:100px;padding:5px 11px;font:500 12px Roboto;color:#4ADE80">%(pct)d%% match</div>
+          <div style="background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.35);border-radius:100px;padding:5px 11px;font:500 12px Roboto;color:#4ADE80">%(pct)d%% match</div>
           <div style="margin-left:9px;font:400 11.5px Roboto;color:#6B7793">%(rank_note)s</div>
         </div>
       </div>
