@@ -3,6 +3,11 @@
 One box per scheduled update. Tick a box only when that change is built, verified and released.
 When the list runs out, add new items above the line and keep going.
 
+## Bugs — fix these before any feature
+
+_Empty right now. The moment a bug is found (by the user or by a run), it goes here and
+outranks everything below._
+
 ## Queued
 
 - [ ] Object list: show a one-line summary at the top ("3 objects found")

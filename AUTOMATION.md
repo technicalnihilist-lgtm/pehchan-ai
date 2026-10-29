@@ -3,6 +3,29 @@
 Every scheduled run ships **one small, verified improvement**. Never ship a build that fails
 a check — a no-op report is better than a broken APK.
 
+## Priority order (strict)
+
+1. **A bug in the shipped app** — anything the user reported, or anything a run notices is
+   broken (crash, wrong result, an APK that will not install). Fix this first, before any
+   roadmap item.
+2. **A broken build or failed release left by the previous run** — restore a working `main`.
+3. **The next roadmap item.**
+
+Never build a feature on top of a known bug. If a fix is bigger than one run, ship the
+smallest correct partial fix and record the rest under "Open bugs" in `ROADMAP.md`.
+
+## Bug protocol
+
+* Reproduce it first — build the same version, or reason from the code plus the user's
+  screenshot. Say what you think the cause is before changing anything.
+* Fix the cause, not the symptom.
+* Add the failing case to the checks in step 4 so it cannot come back silently.
+* Bump the patch version (e.g. 1.6 → 1.7), ship it, and state plainly in the changelog what
+  was broken and what changed.
+* If a fix cannot be verified in the sandbox, say so in the report — never claim it is fixed.
+* **Never leave `main` broken.** If a build fails mid-run, either fix it in the same run or
+  revert the commit that broke it (through the GitHub API) before reporting.
+
 ## 1. Get the code
 
 ```bash
